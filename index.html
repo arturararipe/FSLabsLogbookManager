@@ -656,7 +656,7 @@ The parser will try to extract: Flight Number, Departure, Arrival, Date, Times"
             }
 
             // Extract flight number (2-3 letters followed by 3-4 digits)
-            const flightMatch = line.match(/([A-Z]{2,3}\d{3,4})/);
+            const flightMatch = line.match(/([A-Z0-9]{2,3}\d{1,4})/);
             if (flightMatch) {
                 flightNum = flightMatch[1];
                 console.log('Found flight number:', flightNum);
