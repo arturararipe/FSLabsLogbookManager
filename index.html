@@ -876,16 +876,15 @@ The parser will try to extract: Flight Number, Departure, Arrival, Date, Times"
         }
 
     function getAirlineCrewPrefix(flightNumber) {
-    // Updated RegEx: Accepts letters and numbers for the first 2-3 characters
-    const airlineMatch = flightNumber.match(/^([A-Z0-9]{2,3})/);
-
+    // \w matches letters, numbers, and underscores
+    const airlineMatch = flightNumber.match(/^(\w{2,3})/);
+    
     if (airlineMatch) {
-        const airlineCode = airlineMatch[1];
-        return airlineCrewPrefixes[airlineCode] || airlineCode; 
+        const airlineCode = airlineMatch[1].toUpperCase(); // Normalize to caps
+        return airlineCrewPrefixes[airlineCode] || airlineCode;
     }
-    return 'CRW'; 
+    return 'CRW';
 }
-
         function getCrewForRoute(dep, arr, flightNumber, airlineOverride = null) {
             // Create a normalized route key (alphabetically sorted so GRU-CWB and CWB-GRU use same crew)
             const routeKey = [dep, arr].sort().join('-');
