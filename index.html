@@ -9,11 +9,13 @@
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen p-4">
     <div class="max-w-7xl mx-auto">
+        <!-- Header -->
         <div class="bg-white rounded-lg shadow-xl p-6 mb-6">
             <h1 class="text-3xl font-bold text-gray-800 mb-2">✈️ Aircraft Logbook Manager</h1>
-            <p class="text-gray-600">Load your FSLabs TechLog database and manage flight records</p>
+            <p class="text-gray-600">Load your database and manage flight records</p>
         </div>
 
+        <!-- Database Upload -->
         <div class="bg-white rounded-lg shadow-xl p-6 mb-6">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">📁 Load Database</h2>
             <div class="flex items-center gap-4">
@@ -25,13 +27,18 @@
                 </button>
             </div>
             <p class="text-sm text-gray-500 mt-2">Upload an SQLite database file (.db, .sqlite, .sqlite3)</p>
+            <div id="airportsDbStatus" class="mt-2 text-xs text-green-600 hidden">
+                ✅ Global airports database loaded (28,000+ airports)
+            </div>
         </div>
 
+        <!-- Database Info -->
         <div id="dbInfo" class="hidden bg-white rounded-lg shadow-xl p-6 mb-6">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">📊 Database Information</h2>
             <div id="dbTables" class="space-y-2"></div>
         </div>
 
+        <!-- Add Flight Form -->
         <div id="addFlightSection" class="hidden bg-white rounded-lg shadow-xl p-6 mb-6">
             <div class="flex gap-2 mb-4 border-b border-gray-200">
                 <button onclick="showManualEntry()" id="manualTab" 
@@ -44,6 +51,7 @@
                 </button>
             </div>
 
+            <!-- Manual Entry Tab -->
             <div id="manualEntryTab">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">➕ Add Flight Manually</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -68,6 +76,7 @@
                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
                     
+                    <!-- OOOI Times -->
                     <div class="col-span-2 bg-blue-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-700 mb-3">OOOI Times (HHMM format)</h3>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -94,6 +103,7 @@
                         </div>
                     </div>
 
+                    <!-- Times calculated from OOOI -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Block Time (HHMM)</label>
                         <input type="text" id="blockTime" placeholder="Auto-calculated" readonly
@@ -105,6 +115,7 @@
                                class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50">
                     </div>
 
+                    <!-- Optional fields -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Crew Code (optional)</label>
                         <input type="text" id="crewCode" placeholder="e.g., TAM0003" 
@@ -132,32 +143,57 @@
                 </div>
             </div>
 
-<div id="bulkImportTab" class="hidden">
-    <h2 class="text-xl font-semibold text-gray-800 mb-4">📋 Paste FR24 Data</h2>
-    <div class="bg-blue-50 p-4 rounded-lg mb-4">
-        <div class="mb-4">
-            <label class="block text-sm font-bold text-blue-800 mb-1">Airline ICAO for this Batch:</label>
-            <input type="text" id="batchIcao" placeholder="e.g., TAM, AAL, DAL" maxlength="4"
-                   class="w-full p-2 border border-blue-300 rounded focus:ring-2 focus:ring-blue-500 uppercase">
-            <p class="text-xs text-blue-600 mt-1">This prefix will replace "CREW" in the generated Crew Codes.</p>
-        </div>
-        
-        <p class="text-sm text-gray-700 mb-2"><strong>Instructions:</strong></p>
-        <ol class="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-            <li>Paste your FR24 data into the box below.</li>
-            <li>Enter the airline prefix (ICAO) you want to use.</li>
-            <li>Click "Parse and Import Flights".</li>
-        </ol>
-    </div>
-    
-    <textarea id="bulkData" rows="8" class="w-full p-4 border border-gray-300 rounded-lg font-mono text-sm" placeholder="Paste FR24 data here..."></textarea>
-    
-    <div class="mt-4 flex gap-4">
-        <button onclick="parseBulkData()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold">Parse and Import</button>
-    </div>
-    <div id="parseResults" class="mt-4 hidden"><div id="parseResultsContent"></div></div>
-</div>
+            <!-- Bulk Import Tab -->
+            <div id="bulkImportTab" class="hidden">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">📋 Paste FR24 Data</h2>
+                <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                    <p class="text-sm text-gray-700 mb-2"><strong>Instructions:</strong></p>
+                    <ol class="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                        <li>Go to FlightRadar24.com and search for your aircraft (PS-LBA)</li>
+                        <li>Copy the flight history data from the table</li>
+                        <li>Paste it in the box below</li>
+                        <li>(Optional) Enter airline ICAO code if auto-detection doesn't work</li>
+                        <li>Click "Parse and Import Flights"</li>
+                    </ol>
+                    <p class="text-xs text-gray-500 mt-3">Supported formats: Tab-separated, comma-separated, or multi-line text with flight details</p>
+                </div>
+                
+                <!-- Airline ICAO Override -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Airline ICAO Code (optional override)</label>
+                    <input type="text" id="airlineIcaoOverride" placeholder="e.g., TAM, DAL, UAL (leave blank for auto-detect)" maxlength="3"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">If specified, crew codes will use this prefix instead of auto-detecting from flight number</p>
+                </div>
+                
+                <textarea id="bulkData" rows="12" placeholder="Paste your FR24 data here...
 
+Example formats:
+- Copy directly from FR24 table
+- One flight per line: JJ3128 SBGR SBCG 20:14 21:50
+- CSV format: JJ3128,SBGR,SBCG,2026-02-11,20:14,21:50
+
+The parser will try to extract: Flight Number, Departure, Arrival, Date, Times"
+                          class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm">
+                </textarea>
+                <div class="mt-4 flex gap-4">
+                    <button onclick="parseBulkData()" 
+                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                        Parse and Import Flights
+                    </button>
+                    <button onclick="clearBulkImport()" 
+                            class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                        Clear
+                    </button>
+                </div>
+                <div id="parseResults" class="mt-4 hidden">
+                    <h3 class="font-semibold text-gray-700 mb-2">Parsed Flights:</h3>
+                    <div id="parseResultsContent" class="space-y-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logbook Display -->
         <div id="logbookSection" class="hidden bg-white rounded-lg shadow-xl p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold text-gray-800">📖 Flight Logbook</h2>
@@ -170,10 +206,12 @@
                 <table class="w-full">
                     <thead class="bg-gray-50">
                         <tr id="logbookHeader">
-                            </tr>
+                            <!-- Dynamic headers -->
+                        </tr>
                     </thead>
                     <tbody id="logbookBody" class="divide-y divide-gray-200">
-                        </tbody>
+                        <!-- Dynamic rows -->
+                    </tbody>
                 </table>
             </div>
             <div id="logbookStats" class="mt-6 p-4 bg-blue-50 rounded-lg">
@@ -186,7 +224,6 @@
     <script>
         let db = null;
         let tableName = null;
-        let globalAirports = {};
 
         // Initialize SQL.js
         let SQL;
@@ -195,18 +232,6 @@
                 SQL = sql;
                 console.log("SQL.js initialized");
             });
-
-        // Load Global Airport Database
-        async function loadGlobalAirports() {
-            try {
-                const response = await fetch('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json');
-                globalAirports = await response.json();
-                console.log("Global airport database loaded successfully");
-            } catch (error) {
-                console.error("Could not load global airport data:", error);
-            }
-        }
-        loadGlobalAirports();
 
         async function loadDatabase() {
             const fileInput = document.getElementById('dbFile');
@@ -228,11 +253,13 @@
                 const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'");
                 
                 if (tables.length === 0 || tables[0].values.length === 0) {
+                    // Create default table if database is empty
                     createDefaultTable();
                 } else {
                     displayTables(tables[0].values);
                 }
                 
+                // Show sections
                 document.getElementById('dbInfo').classList.remove('hidden');
                 document.getElementById('addFlightSection').classList.remove('hidden');
                 document.getElementById('logbookSection').classList.remove('hidden');
@@ -253,25 +280,21 @@
             db.run(`
                 CREATE TABLE IF NOT EXISTS flights (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    DOF TEXT,
-                    FLTNUM TEXT,
-                    DEP TEXT,
-                    DEST TEXT,
-                    OOOI TEXT,
-                    BLK TEXT,
-                    FLT TEXT,
-                    LANDING_RATE TEXT,
-                    LANDING_GLOAD TEXT,
-                    LANDING_PITCH TEXT,
-                    LANDING_FLAP TEXT,
-                    FUELREM TEXT,
-                    CREWCODE TEXT
+                    registration TEXT,
+                    flight_number TEXT,
+                    departure TEXT,
+                    arrival TEXT,
+                    departure_time TEXT,
+                    arrival_time TEXT,
+                    duration_minutes INTEGER,
+                    date_added TEXT DEFAULT CURRENT_TIMESTAMP
                 )
             `);
             
             document.getElementById('dbTables').innerHTML = `
                 <div class="bg-green-50 p-4 rounded-lg">
                     <p class="text-sm text-green-800">✅ Created default table: <strong>flights</strong></p>
+                    <p class="text-xs text-green-600 mt-1">Columns: id, registration, flight_number, departure, arrival, departure_time, arrival_time, duration_minutes, date_added</p>
                 </div>
             `;
             
@@ -284,6 +307,7 @@
             
             tables.forEach(table => {
                 const name = table[0];
+                // Get column info
                 const columns = db.exec(`PRAGMA table_info(${name})`);
                 const columnNames = columns[0].values.map(col => col[1]).join(', ');
                 
@@ -298,6 +322,7 @@
             html += '</div>';
             container.innerHTML = html;
             
+            // Auto-select first table
             if (tables.length > 0) {
                 selectTable(tables[0][0]);
             }
@@ -306,6 +331,16 @@
         function selectTable(name) {
             tableName = name;
             displayLogbook();
+            
+            // Highlight selected table
+            const tables = document.querySelectorAll('#dbTables > div > div');
+            tables.forEach(table => {
+                if (table.textContent.includes(name)) {
+                    table.classList.add('ring-2', 'ring-blue-500');
+                } else {
+                    table.classList.remove('ring-2', 'ring-blue-500');
+                }
+            });
         }
 
         function displayLogbook() {
@@ -325,12 +360,14 @@
                 const columns = results[0].columns;
                 const values = results[0].values;
                 
+                // Build header
                 let headerHtml = '';
                 columns.forEach(col => {
                     headerHtml += `<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${col}</th>`;
                 });
                 document.getElementById('logbookHeader').innerHTML = headerHtml;
                 
+                // Build rows
                 let bodyHtml = '';
                 values.forEach(row => {
                     bodyHtml += '<tr class="hover:bg-gray-50">';
@@ -341,20 +378,29 @@
                 });
                 document.getElementById('logbookBody').innerHTML = bodyHtml;
                 
+                // Calculate statistics
                 calculateStats(values, columns);
                 
             } catch (error) {
                 console.error('Error displaying logbook:', error);
+                document.getElementById('logbookBody').innerHTML = `
+                    <tr><td colspan="100" class="text-center py-8 text-red-500">Error loading data</td></tr>
+                `;
             }
         }
 
         function calculateStats(values, columns) {
             const blkIndex = columns.indexOf('BLK');
+            const fltIndex = columns.indexOf('FLT');
             const depIndex = columns.indexOf('DEP');
+            const durationIndex = columns.indexOf('duration_minutes');
+            const regIndex = columns.indexOf('registration');
             
             let totalFlights = values.length;
             let totalBlockMins = 0;
+            let totalFlightMins = 0;
             let uniqueAirports = new Set();
+            let uniqueAircraft = new Set();
             
             function hhmmToMinutes(hhmm) {
                 if (!hhmm || hhmm.length !== 4) return 0;
@@ -367,18 +413,66 @@
                 if (blkIndex !== -1 && row[blkIndex]) {
                     totalBlockMins += hhmmToMinutes(row[blkIndex]);
                 }
+                if (fltIndex !== -1 && row[fltIndex]) {
+                    totalFlightMins += hhmmToMinutes(row[fltIndex]);
+                }
+                if (durationIndex !== -1 && row[durationIndex]) {
+                    totalBlockMins += parseInt(row[durationIndex]);
+                }
                 if (depIndex !== -1 && row[depIndex]) {
                     uniqueAirports.add(row[depIndex]);
+                }
+                if (regIndex !== -1 && row[regIndex]) {
+                    uniqueAircraft.add(row[regIndex]);
                 }
             });
             
             const totalBlockHours = (totalBlockMins / 60).toFixed(1);
+            const totalFlightHours = (totalFlightMins / 60).toFixed(1);
             
             let statsHtml = `
-                <div><p class="text-gray-600">Total Flights</p><p class="text-2xl font-bold text-blue-600">${totalFlights}</p></div>
-                <div><p class="text-gray-600">Block Hours</p><p class="text-2xl font-bold text-green-600">${totalBlockHours}</p></div>
-                <div><p class="text-gray-600">Airports</p><p class="text-2xl font-bold text-orange-600">${uniqueAirports.size}</p></div>
+                <div>
+                    <p class="text-gray-600">Total Flights</p>
+                    <p class="text-2xl font-bold text-blue-600">${totalFlights}</p>
+                </div>
             `;
+            
+            if (blkIndex !== -1) {
+                statsHtml += `
+                    <div>
+                        <p class="text-gray-600">Block Hours</p>
+                        <p class="text-2xl font-bold text-green-600">${totalBlockHours}</p>
+                    </div>
+                `;
+            }
+            
+            if (fltIndex !== -1) {
+                statsHtml += `
+                    <div>
+                        <p class="text-gray-600">Flight Hours</p>
+                        <p class="text-2xl font-bold text-purple-600">${totalFlightHours}</p>
+                    </div>
+                `;
+            }
+            
+            if (depIndex !== -1) {
+                statsHtml += `
+                    <div>
+                        <p class="text-gray-600">Airports</p>
+                        <p class="text-2xl font-bold text-orange-600">${uniqueAirports.size}</p>
+                    </div>
+                `;
+            }
+            
+            if (regIndex !== -1) {
+                statsHtml += `
+                    <div>
+                        <p class="text-gray-600">Aircraft</p>
+                        <p class="text-2xl font-bold text-orange-600">${uniqueAircraft.size}</p>
+                    </div>
+                `;
+            }
+            
             document.getElementById('statsContent').innerHTML = statsHtml;
         }
 
@@ -398,164 +492,580 @@
             const timeIn = document.getElementById('timeIn').value;
             const blockTime = document.getElementById('blockTime').value;
             const flightTime = document.getElementById('flightTime').value;
+            const crewCode = document.getElementById('crewCode').value;
+            const fuelRem = document.getElementById('fuelRem').value;
             
             if (!dof || !flightNumber || !departure || !arrival || !timeOut || !timeOff || !timeOn || !timeIn) {
-                alert('Please fill in all required fields');
+                alert('Please fill in all required fields (Date, Flight Number, Airports, and OOOI times)');
                 return;
             }
             
+            if (!blockTime || !flightTime) {
+                alert('Please calculate Block and Flight times first');
+                return;
+            }
+            
+            // Format OOOI as single string
             const oooi = `${timeOut}/${timeOff}/${timeOn}/${timeIn}`;
-            const crewCode = document.getElementById('crewCode').value || getCrewForRoute(departure, arrival);
-            const landingData = generateLandingData();
-            const fuelRem = document.getElementById('fuelRem').value || landingData.fuelRem;
             
             try {
-                db.run(`
-                    INSERT INTO ${tableName} (DOF, FLTNUM, DEP, DEST, OOOI, BLK, FLT, LANDING_RATE, LANDING_GLOAD, LANDING_PITCH, LANDING_FLAP, FUELREM, CREWCODE)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [dof, flightNumber, departure, arrival, oooi, blockTime, flightTime, landingData.landingRate, landingData.landingGload, landingData.landingPitch, landingData.landingFlap, fuelRem, crewCode]);
+                // Check if we're working with FLIGHTS table
+                if (tableName.toUpperCase() === 'FLIGHTS') {
+                    // Get crew for this route pair with airline-specific prefix (or use provided crew code)
+                    const finalCrewCode = crewCode || getCrewForRoute(departure, arrival, flightNumber);
+                    
+                    // Generate realistic landing data (or use provided fuel)
+                    const landingData = generateLandingData();
+                    const finalFuelRem = fuelRem || landingData.fuelRem;
+                    
+                    db.run(`
+                        INSERT INTO ${tableName} (DOF, FLTNUM, DEP, DEST, OOOI, BLK, FLT, LANDING_RATE, LANDING_GLOAD, LANDING_PITCH, LANDING_FLAP, FUELREM, CREWCODE)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [dof, flightNumber, departure, arrival, oooi, blockTime, flightTime, landingData.landingRate, landingData.landingGload, landingData.landingPitch, landingData.landingFlap, finalFuelRem, finalCrewCode]);
+                } else {
+                    // Fallback for other table structures
+                    alert('Please select the FLIGHTS table to add new flights');
+                    return;
+                }
                 
                 alert('✅ Flight added successfully!');
                 clearForm();
                 displayLogbook();
+                
             } catch (error) {
+                console.error('Error adding flight:', error);
                 alert('Error adding flight: ' + error.message);
             }
         }
 
-        function parseFlightLine(line) {
-            line = line.trim();
-            if (!line || line.length < 20) return null;
-            
-            line = line.replace(/Landed\s+\d{1,2}:\d{2}/g, '');
-            
-            let flightNum = null, dep = null, arr = null, date = null, times = [];
+        function showManualEntry() {
+            document.getElementById('manualEntryTab').classList.remove('hidden');
+            document.getElementById('bulkImportTab').classList.add('hidden');
+            document.getElementById('manualTab').classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+            document.getElementById('manualTab').classList.remove('text-gray-600');
+            document.getElementById('bulkTab').classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+            document.getElementById('bulkTab').classList.add('text-gray-600');
+        }
 
-            const dateMatch = line.match(/^(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})/);
-            if (dateMatch) {
-                date = new Date(dateMatch[1] + ' UTC').toISOString().split('T')[0];
-                line = line.substring(dateMatch[0].length).trim();
-            }
-
-            const airportPattern = /\(([A-Z]{3,4})\)/g;
-            const airports = [...line.matchAll(airportPattern)].map(m => m[1]);
-            
-            if (airports.length >= 2) {
-                const convertIataToIcao = (code) => {
-                    if (code.length === 4) return code;
-                    const found = Object.values(globalAirports).find(a => a.iata === code);
-                    if (found && found.icao) return found.icao;
-                    
-                    const brMapping = {'GRU': 'SBGR', 'CGH': 'SBSP', 'BSB': 'SBBR', 'REC': 'SBRF', 'SSA': 'SBSV', 'FOR': 'SBFZ', 'MAO': 'SBEG', 'BEL': 'SBBE', 'CWB': 'SBCT', 'POA': 'SBPA', 'GIG': 'SBGL', 'VCP': 'SBKP', 'CNF': 'SBCF', 'FLN': 'SBFL', 'NAT': 'SBSG', 'MCZ': 'SBMO', 'CGR': 'SBCG', 'JPA': 'SBJP', 'BPS': 'SBPS', 'LIM': 'SPJC', 'AJU': 'SBAR', 'CGB': 'SBCY', 'IGU': 'SBFI', 'THE': 'SBTE'};
-                    return brMapping[code] || ('SB' + code); 
-                };
-                dep = convertIataToIcao(airports[0]);
-                arr = convertIataToIcao(airports[1]);
-            }
-
-            const flightMatch = line.match(/([A-Z]{2,3}\d{3,4})/);
-            if (flightMatch) flightNum = flightMatch[1];
-
-            const timePattern = /(\d{1,2}):(\d{2})/g;
-            const timeMatches = [...line.matchAll(timePattern)];
-            
-            if (timeMatches.length >= 4) {
-                const t2 = timeMatches[2], t3 = timeMatches[3];
-                const outTime = t2[1].padStart(2, '0') + t2[2].padStart(2, '0');
-                const inTime = t3[1].padStart(2, '0') + t3[2].padStart(2, '0');
-                
-                const addMinutes = (hhmm, mins) => {
-                    let m = parseInt(hhmm.substring(0, 2)) * 60 + parseInt(hhmm.substring(2, 4)) + mins;
-                    m = (m + 1440) % 1440;
-                    return String(Math.floor(m / 60)).padStart(2, '0') + String(m % 60).padStart(2, '0');
-                };
-                times = [outTime, addMinutes(outTime, 7), addMinutes(inTime, -7), inTime];
-            }
-
-            if (!flightNum || !dep || !arr || times.length !== 4) return null;
-            return { flightNum, dep, arr, date: date || new Date().toISOString().split('T')[0], timeOut: times[0], timeOff: times[1], timeOn: times[2], timeIn: times[3] };
+        function showBulkImport() {
+            document.getElementById('manualEntryTab').classList.add('hidden');
+            document.getElementById('bulkImportTab').classList.remove('hidden');
+            document.getElementById('bulkTab').classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+            document.getElementById('bulkTab').classList.remove('text-gray-600');
+            document.getElementById('manualTab').classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+            document.getElementById('manualTab').classList.add('text-gray-600');
         }
 
         function parseBulkData() {
+            if (!db || !tableName) {
+                alert('Please load a database first');
+                return;
+            }
+
             const bulkData = document.getElementById('bulkData').value.trim();
-            if (!bulkData) return;
+            if (!bulkData) {
+                alert('Please paste some flight data');
+                return;
+            }
+
+            console.log('Parsing data:', bulkData);
+
             const lines = bulkData.split('\n').filter(line => line.trim());
-            const flights = lines.map(line => parseFlightLine(line)).filter(f => f !== null);
+            const flights = [];
+            const parseErrors = [];
+            
+            lines.forEach((line, index) => {
+                try {
+                    console.log(`Parsing line ${index + 1}:`, line);
+                    const flight = parseFlightLine(line);
+                    if (flight) {
+                        console.log(`Parsed flight:`, flight);
+                        flights.push(flight);
+                    } else {
+                        parseErrors.push(`Line ${index + 1}: Could not extract required fields (need flight number, airports, and times)`);
+                    }
+                } catch (error) {
+                    console.error(`Error parsing line ${index + 1}:`, error);
+                    parseErrors.push(`Line ${index + 1}: ${error.message}`);
+                }
+            });
+
+            console.log('Total flights parsed:', flights.length);
+            console.log('Parse errors:', parseErrors);
+
+            if (flights.length === 0) {
+                let errorMsg = 'Could not parse any flights from the data.\n\n';
+                if (parseErrors.length > 0) {
+                    errorMsg += 'Errors:\n' + parseErrors.slice(0, 5).join('\n');
+                    if (parseErrors.length > 5) {
+                        errorMsg += `\n...and ${parseErrors.length - 5} more errors`;
+                    }
+                }
+                errorMsg += '\n\nExpected format examples:\n';
+                errorMsg += '- JJ3128 SBGR SBCG 2026-02-11 20:14 21:50\n';
+                errorMsg += '- JJ3128,SBGR,SBCG,2026-02-11,20:14,21:50\n';
+                errorMsg += '- Tab-separated data from FR24 table\n';
+                alert(errorMsg);
+                return;
+            }
+
+            // Display parsed flights for confirmation
             displayParsedFlights(flights);
+        }
+
+        function parseFlightLine(line) {
+            // Try to extract flight data from FR24 format
+            line = line.trim();
+            
+            if (!line || line.length < 20) return null;
+            
+            // Remove "Landed" text if present
+            line = line.replace(/Landed\s+\d{1,2}:\d{2}/g, '');
+            
+            console.log('Processing line:', line);
+            
+            // FR24 format: "11 Feb 2026Sao Paulo (GRU)Recife (REC)LA33762:4218:1518:4421:20"
+            
+            let flightNum = null;
+            let dep = null;
+            let arr = null;
+            let date = null;
+            let times = [];
+
+            // Extract date at the beginning (DD Mon YYYY)
+            const dateMatch = line.match(/^(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})/);
+            if (dateMatch) {
+                const dateStr = dateMatch[1];
+                date = new Date(dateStr + ' UTC').toISOString().split('T')[0];
+                console.log('Found date:', date);
+                // Remove date from line for easier parsing
+                line = line.substring(dateMatch[0].length).trim();
+            }
+
+            // Extract airport codes in parentheses - format: "City (CODE)"
+            const airportPattern = /\(([A-Z]{3,4})\)/g;
+            const airports = [...line.matchAll(airportPattern)].map(m => m[1]);
+            console.log('Found airports:', airports);
+            
+            if (airports.length >= 2) {
+                // Convert both airports to ICAO using the comprehensive mapping
+                dep = convertToIcao(airports[0]);
+                arr = convertToIcao(airports[1]);
+                
+                console.log('Converted to ICAO - Departure:', dep, 'Arrival:', arr);
+            }
+
+            // Extract flight number (2-3 letters followed by 3-4 digits)
+            const flightMatch = line.match(/([A-Z]{2,3}\d{3,4})/);
+            if (flightMatch) {
+                flightNum = flightMatch[1];
+                console.log('Found flight number:', flightNum);
+            }
+
+            // Extract all times - looking for HH:MM format
+            const timePattern = /(\d{1,2}):(\d{2})/g;
+            const timeMatches = [...line.matchAll(timePattern)];
+            
+            console.log('Time matches found:', timeMatches.length);
+            
+            if (timeMatches.length >= 4) {
+                // FR24 format has: duration, scheduled_dep, actual_dep, actual_arr, scheduled_arr
+                // We want indices 1 and 2 (scheduled & actual dep) and 2 and 3 (actual arr & scheduled arr)
+                // Actually let's use actual times (indices 2 and 3)
+                const actualDep = timeMatches[2];
+                const actualArr = timeMatches[3];
+                
+                // Convert to HHMM format
+                const outTime = actualDep[1].padStart(2, '0') + actualDep[2].padStart(2, '0');
+                const inTime = actualArr[1].padStart(2, '0') + actualArr[2].padStart(2, '0');
+                
+                // Estimate Off (7 min after Out) and On (7 min before In)
+                function addMinutes(hhmm, mins) {
+                    let totalMins = parseInt(hhmm.substring(0, 2)) * 60 + parseInt(hhmm.substring(2, 4)) + mins;
+                    if (totalMins < 0) totalMins += 24 * 60;
+                    totalMins = totalMins % (24 * 60);
+                    const h = Math.floor(totalMins / 60);
+                    const m = totalMins % 60;
+                    return String(h).padStart(2, '0') + String(m).padStart(2, '0');
+                }
+                
+                times = [
+                    outTime,
+                    addMinutes(outTime, 7),  // Off (takeoff ~7 min after pushback)
+                    addMinutes(inTime, -7),  // On (landing ~7 min before gate)
+                    inTime
+                ];
+                
+                console.log('Extracted times:', times);
+            }
+
+            // Validate we have all required data
+            if (!flightNum || !dep || !arr || times.length !== 4) {
+                console.log('Missing required fields:', { flightNum, dep, arr, date, timesCount: times.length });
+                return null;
+            }
+
+            if (!date) {
+                date = new Date().toISOString().split('T')[0];
+            }
+
+            const result = {
+                flightNum,
+                dep,
+                arr,
+                date,
+                timeOut: times[0],
+                timeOff: times[1],
+                timeOn: times[2],
+                timeIn: times[3]
+            };
+            
+            console.log('Successfully parsed flight:', result);
+            return result;
         }
 
         function displayParsedFlights(flights) {
             const resultsDiv = document.getElementById('parseResults');
             const contentDiv = document.getElementById('parseResultsContent');
-            let html = flights.map(f => `
-                <div class="bg-gray-50 p-3 rounded-lg text-sm mb-2">
-                    <div class="font-semibold">${f.flightNum}: ${f.dep} → ${f.arr}</div>
-                    <div class="text-gray-600">Date: ${f.date} | OOOI: ${f.timeOut}/${f.timeOff}/${f.timeOn}/${f.timeIn}</div>
-                </div>
-            `).join('');
             
-            contentDiv.innerHTML = html + `<button onclick='importParsedFlights(${JSON.stringify(flights)})' class="mt-4 w-full bg-green-600 text-white py-3 rounded-lg">Import ${flights.length} Flights</button>`;
+            let html = '';
+            flights.forEach((flight, index) => {
+                // Calculate block and flight times
+                const oooi = `${flight.timeOut}/${flight.timeOff}/${flight.timeOn}/${flight.timeIn}`;
+                const blockTime = calculateTimeString(flight.timeOut, flight.timeIn);
+                const flightTime = calculateTimeString(flight.timeOff, flight.timeOn);
+                
+                html += `
+                    <div class="bg-gray-50 p-3 rounded-lg text-sm">
+                        <div class="font-semibold text-gray-800">${flight.flightNum}: ${flight.dep} → ${flight.arr}</div>
+                        <div class="text-gray-600 text-xs mt-1">
+                            Date: ${flight.date} | OOOI: ${oooi} | Block: ${blockTime} | Flight: ${flightTime}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            contentDiv.innerHTML = html;
             resultsDiv.classList.remove('hidden');
+            
+            // Add import button
+            const importBtn = `
+                <button onclick="importParsedFlights(${JSON.stringify(flights).replace(/"/g, '&quot;')})" 
+                        class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                    Import ${flights.length} Flight${flights.length > 1 ? 's' : ''} to Database
+                </button>
+            `;
+            contentDiv.innerHTML = html + importBtn;
+        }
+
+        function calculateTimeString(start, end) {
+            function hhmmToMinutes(hhmm) {
+                const hours = parseInt(hhmm.substring(0, 2));
+                const mins = parseInt(hhmm.substring(2, 4));
+                return hours * 60 + mins;
+            }
+            
+            let mins = hhmmToMinutes(end) - hhmmToMinutes(start);
+            if (mins < 0) mins += 24 * 60;
+            
+            const hours = Math.floor(mins / 60);
+            const minutes = mins % 60;
+            return String(hours).padStart(2, '0') + String(minutes).padStart(2, '0');
+        }
+
+        // Store crew assignments by route pair
+        const routeCrewAssignments = {};
+        
+        // Global airports database - will be loaded from GitHub
+        let globalAirportsDb = null;
+        
+        // Load global airports database
+        async function loadGlobalAirports() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json');
+                const data = await response.json();
+                globalAirportsDb = data;
+                console.log('Loaded global airports database:', Object.keys(data).length, 'airports');
+                
+                // Show success indicator
+                const statusDiv = document.getElementById('airportsDbStatus');
+                if (statusDiv) {
+                    statusDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Failed to load global airports database:', error);
+                // Fallback to basic mapping if loading fails
+                globalAirportsDb = null;
+                
+                // Show warning
+                const statusDiv = document.getElementById('airportsDbStatus');
+                if (statusDiv) {
+                    statusDiv.textContent = '⚠️ Could not load global airports database (using basic mapping)';
+                    statusDiv.classList.remove('text-green-600', 'hidden');
+                    statusDiv.classList.add('text-yellow-600');
+                }
+            }
+        }
+        
+        // Load airports database on page load
+        loadGlobalAirports();
+        
+        // Airline IATA to crew code prefix mapping
+        const airlineCrewPrefixes = {
+            'LA': 'TAM',  // LATAM
+            'JJ': 'TAM',  // LATAM Brasil
+            'AD': 'AZU',  // Azul
+            'G3': 'GLO',  // GOL
+            'AA': 'AAL',  // American
+            'DL': 'DAL',  // Delta
+            'UA': 'UAL',  // United
+            'BA': 'BAW',  // British Airways
+            'AF': 'AFR',  // Air France
+            'LH': 'DLH',  // Lufthansa
+            'IB': 'IBE',  // Iberia
+            'TP': 'TAP',  // TAP Portugal
+            'AR': 'ARG',  // Aerolineas Argentinas
+            'CM': 'CMP',  // Copa Airlines
+            'AV': 'AVA',  // Avianca
+            'AC': 'ACA',  // Air Canada
+            'AM': 'AMX',  // Aeromexico
+            'NK': 'NKS',  // Spirit
+            'F9': 'FFT',  // Frontier
+            'WN': 'SWA',  // Southwest
+            'B6': 'JBU',  // JetBlue
+            'AS': 'ASA',  // Alaska
+            'QF': 'QFA',  // Qantas
+            'NZ': 'ANZ',  // Air New Zealand
+            'EK': 'UAE',  // Emirates
+            'QR': 'QTR',  // Qatar
+            'EY': 'ETD',  // Etihad
+            'TK': 'THY',  // Turkish
+            'SQ': 'SIA',  // Singapore
+            'CX': 'CPA',  // Cathay Pacific
+            'NH': 'ANA',  // ANA
+            'JL': 'JAL',  // Japan Airlines
+            'KE': 'KAL',  // Korean Air
+            'OZ': 'AAR',  // Asiana
+            'CA': 'CCA',  // Air China
+            'MU': 'CES',  // China Eastern
+            'CZ': 'CSN',  // China Southern
+        };
+
+        function convertToIcao(iataCode) {
+            iataCode = iataCode.toUpperCase();
+            
+            // If already 4 characters, assume it's ICAO
+            if (iataCode.length === 4) {
+                return iataCode;
+            }
+            
+            // If 3 characters, try to find it in the global database
+            if (iataCode.length === 3 && globalAirportsDb) {
+                // Search through the database for matching IATA code
+                for (const icao in globalAirportsDb) {
+                    if (globalAirportsDb[icao].iata === iataCode) {
+                        console.log(`Found IATA ${iataCode} -> ICAO ${icao}`);
+                        return icao;
+                    }
+                }
+            }
+            
+            // If not found in database, return as-is
+            console.log(`Airport code ${iataCode} not found in database, using as-is`);
+            return iataCode;
+        }
+
+        function getAirlineCrewPrefix(flightNumber) {
+            // Extract airline code (first 2-3 letters)
+            const airlineMatch = flightNumber.match(/^([A-Z]{2,3})/);
+            if (airlineMatch) {
+                const airlineCode = airlineMatch[1];
+                return airlineCrewPrefixes[airlineCode] || airlineCode; // Use airline code itself if not mapped
+            }
+            return 'CRW'; // Default fallback
+        }
+
+        function getCrewForRoute(dep, arr, flightNumber, airlineOverride = null) {
+            // Create a normalized route key (alphabetically sorted so GRU-CWB and CWB-GRU use same crew)
+            const routeKey = [dep, arr].sort().join('-');
+            
+            // Get airline-specific prefix - use override if provided, otherwise auto-detect
+            const prefix = airlineOverride || getAirlineCrewPrefix(flightNumber);
+            
+            if (!routeCrewAssignments[routeKey]) {
+                // Assign a new crew to this route pair
+                const crewNum = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
+                routeCrewAssignments[routeKey] = prefix + crewNum;
+            }
+            
+            return routeCrewAssignments[routeKey];
+        }
+
+        function clearBulkImport() {
+            document.getElementById('bulkData').value = '';
+            document.getElementById('airlineIcaoOverride').value = '';
+            document.getElementById('parseResults').classList.add('hidden');
+        }
+
+        function generateLandingData() {
+            // Landing rate: Most landings are smooth (closer to -100), bad landings are rare
+            // Use a skewed distribution: 70% between -100 and -200, 20% between -200 and -250, 10% worse than -250
+            let landingRate;
+            const rand = Math.random();
+            if (rand < 0.70) {
+                // Smooth landing: -100 to -200 fpm
+                landingRate = -100 - (Math.random() * 100);
+            } else if (rand < 0.90) {
+                // Firm landing: -200 to -250 fpm
+                landingRate = -200 - (Math.random() * 50);
+            } else {
+                // Hard landing (rare): -250 to -350 fpm
+                landingRate = -250 - (Math.random() * 100);
+            }
+            
+            // Landing G-load: typically between 1.0 and 1.3 G
+            const landingGload = (1.0 + Math.random() * 0.3).toFixed(2);
+            
+            // Landing pitch: Most are between 3-5 degrees, higher pitch is rare
+            // 80% between 3-5 degrees, 20% between 5-9 degrees
+            let landingPitch;
+            if (Math.random() < 0.80) {
+                landingPitch = 3 + (Math.random() * 2); // 3-5 degrees
+            } else {
+                landingPitch = 5 + (Math.random() * 4); // 5-9 degrees
+            }
+            
+            return {
+                landingRate: landingRate.toFixed(2),
+                landingGload: landingGload,
+                landingPitch: landingPitch.toFixed(2),
+                landingFlap: 'FULL',
+                fuelRem: (2.0 + Math.random() * 4.0).toFixed(1)
+            };
         }
 
         function importParsedFlights(flights) {
-    if (!db || !tableName) return;
+            if (!db || tableName.toUpperCase() !== 'FLIGHTS') {
+                alert('Please select the FLIGHTS table');
+                return;
+            }
 
-    // Get the desired ICAO from the new input box
-    const userIcao = document.getElementById('batchIcao').value;
+            let imported = 0;
+            let errors = 0;
+            
+            // Get airline override if provided
+            const airlineOverride = document.getElementById('airlineIcaoOverride').value.trim().toUpperCase() || null;
 
-    flights.forEach(f => {
-        const oooi = `${f.timeOut}/${f.timeOff}/${f.timeOn}/${f.timeIn}`;
-        const blk = calculateTimeString(f.timeOut, f.timeIn);
-        const flt = calculateTimeString(f.timeOff, f.timeOn);
-        
-        // Pass the user-defined ICAO to the crew generator
-        const crew = getCrewForRoute(f.dep, f.arr, userIcao);
-        const land = generateLandingData();
+            flights.forEach(flight => {
+                try {
+                    const oooi = `${flight.timeOut}/${flight.timeOff}/${flight.timeOn}/${flight.timeIn}`;
+                    const blockTime = calculateTimeString(flight.timeOut, flight.timeIn);
+                    const flightTime = calculateTimeString(flight.timeOff, flight.timeOn);
+                    
+                    // Get crew for this route pair with airline-specific prefix (or override)
+                    const crewCode = getCrewForRoute(flight.dep, flight.arr, flight.flightNum, airlineOverride);
+                    
+                    // Generate realistic landing data
+                    const landingData = generateLandingData();
+                    
+                    db.run(`
+                        INSERT INTO ${tableName} (DOF, FLTNUM, DEP, DEST, OOOI, BLK, FLT, LANDING_RATE, LANDING_GLOAD, LANDING_PITCH, LANDING_FLAP, FUELREM, CREWCODE)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [flight.date, flight.flightNum, flight.dep, flight.arr, oooi, blockTime, flightTime, landingData.landingRate, landingData.landingGload, landingData.landingPitch, landingData.landingFlap, landingData.fuelRem, crewCode]);
+                    
+                    imported++;
+                } catch (error) {
+                    console.error('Error importing flight:', error);
+                    errors++;
+                }
+            });
 
-        db.run(`INSERT INTO ${tableName} (DOF, FLTNUM, DEP, DEST, OOOI, BLK, FLT, LANDING_RATE, LANDING_GLOAD, LANDING_PITCH, LANDING_FLAP, FUELREM, CREWCODE) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-                [f.date, f.flightNum, f.dep, f.arr, oooi, blk, flt, land.landingRate, land.landingGload, land.landingPitch, land.landingFlap, land.fuelRem, crew]);
-    });
-
-    displayLogbook();
-    document.getElementById('parseResults').classList.add('hidden');
-    document.getElementById('bulkData').value = '';
-    alert(`Successfully imported ${flights.length} flights!`);
-}
-        function calculateTimeString(start, end) {
-            const toMin = (s) => parseInt(s.substring(0, 2)) * 60 + parseInt(s.substring(2, 4));
-            let m = toMin(end) - toMin(start);
-            if (m < 0) m += 1440;
-            return String(Math.floor(m / 60)).padStart(2, '0') + String(m % 60).padStart(2, '0');
-        }
-
-        const routeCrewAssignments = {};
-       function getCrewForRoute(dep, arr, customPrefix) {
-    const key = [dep, arr].sort().join('-');
-    if (routeCrewAssignments[key]) return routeCrewAssignments[key];
-
-    // Use the user-provided ICAO, or default to 'CREW'
-    const prefix = (customPrefix && customPrefix.trim() !== '') ? customPrefix.toUpperCase() : 'CREW';
-    
-    routeCrewAssignments[key] = prefix + Math.floor(1000 + Math.random() * 9000);
-    return routeCrewAssignments[key];
-}
-        function generateLandingData() {
-            return { landingRate: (-100 - Math.random() * 200).toFixed(2), landingGload: (1.0 + Math.random() * 0.3).toFixed(2), landingPitch: (3 + Math.random() * 4).toFixed(2), landingFlap: 'FULL', fuelRem: (2 + Math.random() * 4).toFixed(1) };
+            alert(`✅ Imported ${imported} flight${imported > 1 ? 's' : ''} successfully!${errors > 0 ? `\n⚠️ ${errors} flight${errors > 1 ? 's' : ''} failed to import.` : ''}`);
+            
+            // Clear and refresh
+            clearBulkImport();
+            displayLogbook();
         }
 
         function calculateTimes() {
-            const tOut = document.getElementById('timeOut').value, tIn = document.getElementById('timeIn').value;
-            const tOff = document.getElementById('timeOff').value, tOn = document.getElementById('timeOn').value;
-            if (tOut && tIn) document.getElementById('blockTime').value = calculateTimeString(tOut, tIn);
-            if (tOff && tOn) document.getElementById('flightTime').value = calculateTimeString(tOff, tOn);
+            const timeOut = document.getElementById('timeOut').value;
+            const timeOff = document.getElementById('timeOff').value;
+            const timeOn = document.getElementById('timeOn').value;
+            const timeIn = document.getElementById('timeIn').value;
+            
+            if (!timeOut || !timeOff || !timeOn || !timeIn) {
+                alert('Please enter all OOOI times');
+                return;
+            }
+            
+            // Convert HHMM to minutes
+            function hhmmToMinutes(hhmm) {
+                const hours = parseInt(hhmm.substring(0, 2));
+                const mins = parseInt(hhmm.substring(2, 4));
+                return hours * 60 + mins;
+            }
+            
+            // Convert minutes to HHMM
+            function minutesToHHMM(minutes) {
+                const hours = Math.floor(minutes / 60);
+                const mins = minutes % 60;
+                return String(hours).padStart(2, '0') + String(mins).padStart(2, '0');
+            }
+            
+            const outMins = hhmmToMinutes(timeOut);
+            const offMins = hhmmToMinutes(timeOff);
+            const onMins = hhmmToMinutes(timeOn);
+            const inMins = hhmmToMinutes(timeIn);
+            
+            // Calculate block time (Out to In)
+            let blockMins = inMins - outMins;
+            if (blockMins < 0) blockMins += 24 * 60; // Handle overnight
+            
+            // Calculate flight time (Off to On)
+            let flightMins = onMins - offMins;
+            if (flightMins < 0) flightMins += 24 * 60; // Handle overnight
+            
+            document.getElementById('blockTime').value = minutesToHHMM(blockMins);
+            document.getElementById('flightTime').value = minutesToHHMM(flightMins);
         }
 
-        function showManualEntry() { document.getElementById('manualEntryTab').classList.remove('hidden'); document.getElementById('bulkImportTab').classList.add('hidden'); }
-        function showBulkImport() { document.getElementById('manualEntryTab').classList.add('hidden'); document.getElementById('bulkImportTab').classList.remove('hidden'); }
-        function clearForm() { ['dof', 'flightNumber', 'departure', 'arrival', 'timeOut', 'timeOff', 'timeOn', 'timeIn', 'blockTime', 'flightTime', 'crewCode', 'fuelRem'].forEach(id => document.getElementById(id).value = ''); }
-        function exportDatabase() { if (!db) return; const data = db.export(); const blob = new Blob([data], { type: 'application/x-sqlite3' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `logbook_${new Date().toISOString().split('T')[0]}.db`; a.click(); }
+        function calculateDuration() {
+            // Keep this for backwards compatibility but it's not used in the new form
+            calculateTimes();
+        }
+
+        function clearForm() {
+            document.getElementById('dof').value = '';
+            document.getElementById('flightNumber').value = '';
+            document.getElementById('departure').value = '';
+            document.getElementById('arrival').value = '';
+            document.getElementById('timeOut').value = '';
+            document.getElementById('timeOff').value = '';
+            document.getElementById('timeOn').value = '';
+            document.getElementById('timeIn').value = '';
+            document.getElementById('blockTime').value = '';
+            document.getElementById('flightTime').value = '';
+            document.getElementById('crewCode').value = '';
+            document.getElementById('fuelRem').value = '';
+        }
+
+        function exportDatabase() {
+            if (!db) {
+                alert('No database loaded');
+                return;
+            }
+            
+            const data = db.export();
+            const blob = new Blob([data], { type: 'application/x-sqlite3' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `logbook_${new Date().toISOString().split('T')[0]}.db`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
     </script>
 </body>
 </html>
