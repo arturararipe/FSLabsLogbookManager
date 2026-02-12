@@ -19,7 +19,7 @@
             <div class="flex items-center gap-4">
                 <input type="file" id="dbFile" accept=".db,.sqlite,.sqlite3" 
                        class="flex-1 p-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:cursor-pointer hover:file:bg-blue-700">
-                <button onclick="loadDatabase()" 
+                <button id="loadBtn" onclick="loadDatabase()" 
                         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
                     Load Database
                 </button>
@@ -134,29 +134,11 @@
 
             <div id="bulkImportTab" class="hidden">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">📋 Paste FR24 Data</h2>
-                <div class="bg-blue-50 p-4 rounded-lg mb-4">
-                    <p class="text-sm text-gray-700 mb-2"><strong>Instructions:</strong></p>
-                    <ol class="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                        <li>Go to FlightRadar24.com and search for your aircraft (PS-LBA)</li>
-                        <li>Copy the flight history data from the table</li>
-                        <li>Paste it in the box below</li>
-                        <li>Click "Parse and Import Flights"</li>
-                    </ol>
-                    <p class="text-xs text-gray-500 mt-3">Supported formats: Tab-separated, comma-separated, or multi-line text with flight details</p>
-                </div>
-                <textarea id="bulkData" rows="12" placeholder="Paste your FR24 data here..."></textarea>
+                <textarea id="bulkData" rows="12" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm"></textarea>
                 <div class="mt-4 flex gap-4">
-                    <button onclick="parseBulkData()" 
-                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
-                        Parse and Import Flights
-                    </button>
-                    <button onclick="document.getElementById('bulkData').value = ''" 
-                            class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
-                        Clear
-                    </button>
+                    <button onclick="parseBulkData()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg">Parse and Import Flights</button>
                 </div>
                 <div id="parseResults" class="mt-4 hidden">
-                    <h3 class="font-semibold text-gray-700 mb-2">Parsed Flights:</h3>
                     <div id="parseResultsContent" class="space-y-2"></div>
                 </div>
             </div>
@@ -165,153 +147,104 @@
         <div id="logbookSection" class="hidden bg-white rounded-lg shadow-xl p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold text-gray-800">📖 Flight Logbook</h2>
-                <button onclick="exportDatabase()" 
-                        class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
-                    💾 Export Database
-                </button>
+                <button onclick="exportDatabase()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg">💾 Export Database</button>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr id="logbookHeader"></tr>
-                    </thead>
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50"><tr id="logbookHeader"></tr></thead>
                     <tbody id="logbookBody" class="divide-y divide-gray-200"></tbody>
                 </table>
             </div>
-            <div id="logbookStats" class="mt-6 p-4 bg-blue-50 rounded-lg">
-                <h3 class="font-semibold text-gray-700 mb-2">Statistics</h3>
-                <div id="statsContent" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm"></div>
-            </div>
+            <div id="logbookStats" class="mt-6 p-4 bg-blue-50 rounded-lg"><div id="statsContent" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm"></div></div>
         </div>
     </div>
 
     <script>
-        // API CONFIGURATION
-        const AVIATION_API_KEY = 'YOUR_API_KEY'; // Replace with your Aviationstack API Key
-        
+        const AVIATION_API_KEY = '976447ce8e08715d03e6fe7b9327facd'; // Replace with your key
         let db = null;
         let tableName = null;
         let SQL;
         const crewCache = {};
 
         initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` })
-            .then(sql => {
-                SQL = sql;
-                console.log("SQL.js initialized");
-            });
+            .then(sql => { SQL = sql; console.log("SQL.js initialized"); });
 
-        // NEW ASYNC CREW RESOLUTION LOGIC
         async function getCrewForRoute(dep, arr, flightNum) {
             const routeKey = [dep, arr].sort().join('-');
             const iataPrefix = flightNum.substring(0, 2).toUpperCase();
-
             if (crewCache[routeKey]) return crewCache[routeKey];
 
             let prefix = 'CREW';
-
             try {
                 const response = await fetch(`https://api.aviationstack.com/v1/airlines?access_key=${AVIATION_API_KEY}&iata_code=${iataPrefix}`);
                 const data = await response.json();
+                prefix = (data.data && data.data[0]) ? (data.data[0].icao_code || 'CREW') : (flightNum.match(/^[A-Z]{3}/) ? flightNum.substring(0,3) : 'CREW');
+            } catch (e) { console.error("API Error", e); }
 
-                if (data.data && data.data.length > 0) {
-                    prefix = data.data[0].icao_code || 'CREW';
-                } else {
-                    const icaoMatch = flightNum.match(/^[A-Z]{3}/);
-                    prefix = icaoMatch ? icaoMatch[0] : 'CREW';
-                }
-            } catch (error) {
-                console.error("Airline API failed, using fallback:", error);
-            }
-
-            const crewNum = String(Math.floor(Math.random() * 8999) + 1000);
-            crewCache[routeKey] = prefix + crewNum;
+            crewCache[routeKey] = prefix + String(Math.floor(Math.random() * 8999) + 1000);
             return crewCache[routeKey];
         }
 
         async function loadDatabase() {
-            const fileInput = document.getElementById('dbFile');
-            const file = fileInput.files[0];
+            const file = document.getElementById('dbFile').files[0];
             if (!file) return;
+            const btn = document.getElementById('loadBtn');
+            btn.innerText = "Loading..."; btn.disabled = true;
 
             try {
                 const arrayBuffer = await file.arrayBuffer();
                 db = new SQL.Database(new Uint8Array(arrayBuffer));
-                const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'");
+                const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
                 
-                if (tables.length === 0 || tables[0].values.length === 0) {
-                    createDefaultTable();
-                } else {
-                    displayTables(tables[0].values);
-                }
+                if (tables.length === 0 || !tables[0].values) { createDefaultTable(); } 
+                else { displayTables(tables[0].values); }
                 
                 document.getElementById('dbInfo').classList.remove('hidden');
                 document.getElementById('addFlightSection').classList.remove('hidden');
                 document.getElementById('logbookSection').classList.remove('hidden');
-            } catch (error) {
-                db = new SQL.Database();
-                createDefaultTable();
-            }
-        }
-
-        function createDefaultTable() {
-            tableName = 'flights';
-            db.run(`CREATE TABLE IF NOT EXISTS flights (id INTEGER PRIMARY KEY AUTOINCREMENT, DOF TEXT, FLTNUM TEXT, DEP TEXT, DEST TEXT, OOOI TEXT, BLK TEXT, FLT TEXT, LANDING_RATE TEXT, LANDING_GLOAD TEXT, LANDING_PITCH TEXT, LANDING_FLAP TEXT, FUELREM TEXT, CREWCODE TEXT)`);
-            displayLogbook();
+            } catch (e) { alert("Invalid DB"); db = new SQL.Database(); createDefaultTable(); }
+            finally { btn.innerText = "Load Database"; btn.disabled = false; }
         }
 
         function displayTables(tables) {
             const container = document.getElementById('dbTables');
-            container.innerHTML = tables.map(table => `
-                <div class="bg-blue-50 p-4 rounded-lg cursor-pointer hover:bg-blue-100 transition" onclick="selectTable('${table[0]}')">
-                    <p class="font-semibold text-blue-800">📋 ${table[0]}</p>
-                </div>
-            `).join('');
-            if (tables.length > 0) selectTable(tables[0][0]);
+            container.innerHTML = tables.map(table => {
+                const name = table[0];
+                let cols = "";
+                try { cols = db.exec(`PRAGMA table_info("${name}")`)[0].values.map(v => v[1]).join(', '); } catch(e){}
+                return `<div class="bg-blue-50 p-4 rounded-lg cursor-pointer hover:bg-blue-100" onclick="selectTable('${name}')">
+                            <p class="font-semibold text-blue-800">📋 ${name}</p><p class="text-[10px] text-blue-600 truncate">Fields: ${cols}</p>
+                        </div>`;
+            }).join('');
+            selectTable(tables[0][0]);
         }
 
-        function selectTable(name) {
-            tableName = name;
-            displayLogbook();
-        }
+        function selectTable(name) { tableName = name; displayLogbook(); }
 
         function displayLogbook() {
             if (!db || !tableName) return;
-            const results = db.exec(`SELECT * FROM ${tableName} ORDER BY id DESC`);
-            if (results.length === 0) return;
-            
-            const columns = results[0].columns;
-            const values = results[0].values;
-            
-            document.getElementById('logbookHeader').innerHTML = columns.map(col => `<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">${col}</th>`).join('');
-            document.getElementById('logbookBody').innerHTML = values.map(row => `<tr>${row.map(cell => `<td class="px-4 py-3 text-sm text-gray-700">${cell || '-'}</td>`).join('')}</tr>`).join('');
+            try {
+                const res = db.exec(`SELECT * FROM "${tableName}" ORDER BY id DESC`);
+                if (res.length === 0) { document.getElementById('logbookBody').innerHTML = '<tr><td colspan="100" class="p-4 text-center">No data</td></tr>'; return; }
+                document.getElementById('logbookHeader').innerHTML = res[0].columns.map(c => `<th class="px-4 py-2 font-bold">${c}</th>`).join('');
+                document.getElementById('logbookBody').innerHTML = res[0].values.map(r => `<tr>${r.map(v => `<td class="px-4 py-2">${v||'-'}</td>`).join('')}</tr>`).join('');
+            } catch(e) { console.error(e); }
         }
 
         async function addFlight() {
-            if (!db || !tableName) return;
-            const dof = document.getElementById('dof').value;
             const flightNum = document.getElementById('flightNumber').value.toUpperCase();
             const dep = document.getElementById('departure').value.toUpperCase();
             const arr = document.getElementById('arrival').value.toUpperCase();
-            
-            // Wait for API resolution for crew code
             const crew = document.getElementById('crewCode').value || await getCrewForRoute(dep, arr, flightNum);
-            const land = generateLandingData();
             
-            db.run(`INSERT INTO ${tableName} (DOF, FLTNUM, DEP, DEST, OOOI, BLK, FLT, LANDING_RATE, LANDING_GLOAD, LANDING_PITCH, LANDING_FLAP, FUELREM, CREWCODE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [dof, flightNum, dep, arr, `${document.getElementById('timeOut').value}/${document.getElementById('timeOff').value}/${document.getElementById('timeOn').value}/${document.getElementById('timeIn').value}`, document.getElementById('blockTime').value, document.getElementById('flightTime').value, land.landingRate, land.landingGload, land.landingPitch, land.landingFlap, land.fuelRem, crew]);
-            
-            displayLogbook();
-            clearForm();
-        }
-
-        function generateLandingData() {
-            return { landingRate: (-100 - Math.random() * 200).toFixed(2), landingGload: (1.0 + Math.random() * 0.3).toFixed(2), landingPitch: (3 + Math.random() * 4).toFixed(2), landingFlap: 'FULL', fuelRem: (2 + Math.random() * 4).toFixed(1) };
+            db.run(`INSERT INTO "${tableName}" (DOF, FLTNUM, DEP, DEST, OOOI, BLK, FLT, CREWCODE) VALUES (?,?,?,?,?,?,?,?)`, 
+                [document.getElementById('dof').value, flightNum, dep, arr, `${document.getElementById('timeOut').value}/${document.getElementById('timeIn').value}`, document.getElementById('blockTime').value, document.getElementById('flightTime').value, crew]);
+            displayLogbook(); clearForm();
         }
 
         function calculateTimes() {
-            const toM = (v) => parseInt(v.substring(0,2)) * 60 + parseInt(v.substring(2,4));
             const diff = (s, e) => {
-                let m = toM(e) - toM(s);
+                let m = (parseInt(e.slice(0,2))*60 + parseInt(e.slice(2,4))) - (parseInt(s.slice(0,2))*60 + parseInt(s.slice(2,4)));
                 if (m < 0) m += 1440;
                 return String(Math.floor(m/60)).padStart(2,'0') + String(m%60).padStart(2,'0');
             };
@@ -319,10 +252,11 @@
             document.getElementById('flightTime').value = diff(document.getElementById('timeOff').value, document.getElementById('timeOn').value);
         }
 
+        function createDefaultTable() { tableName = 'flights'; db.run("CREATE TABLE IF NOT EXISTS flights (id INTEGER PRIMARY KEY, DOF TEXT, FLTNUM TEXT, DEP TEXT, DEST TEXT, OOOI TEXT, BLK TEXT, FLT TEXT, CREWCODE TEXT)"); displayLogbook(); }
         function showManualEntry() { document.getElementById('manualEntryTab').classList.remove('hidden'); document.getElementById('bulkImportTab').classList.add('hidden'); }
         function showBulkImport() { document.getElementById('manualEntryTab').classList.add('hidden'); document.getElementById('bulkImportTab').classList.remove('hidden'); }
-        function clearForm() { ['dof', 'flightNumber', 'departure', 'arrival', 'timeOut', 'timeOff', 'timeOn', 'timeIn', 'blockTime', 'flightTime', 'crewCode', 'fuelRem'].forEach(id => document.getElementById(id).value = ''); }
-        function exportDatabase() { const blob = new Blob([db.export()], { type: 'application/x-sqlite3' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'logbook.db'; a.click(); }
+        function clearForm() { ['dof', 'flightNumber', 'departure', 'arrival', 'timeOut', 'timeOff', 'timeOn', 'timeIn', 'blockTime', 'flightTime', 'crewCode'].forEach(id => document.getElementById(id).value = ''); }
+        function exportDatabase() { const b = new Blob([db.export()], {type:'application/x-sqlite3'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download='logbook.db'; a.click(); }
     </script>
 </body>
 </html>
