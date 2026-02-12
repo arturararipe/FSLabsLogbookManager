@@ -11,7 +11,7 @@
     <div class="max-w-7xl mx-auto">
         <div class="bg-white rounded-lg shadow-xl p-6 mb-6">
             <h1 class="text-3xl font-bold text-gray-800 mb-2">✈️ Aircraft Logbook Manager</h1>
-            <p class="text-gray-600">Load your database and manage flight records with manual ICAO control</p>
+            <p class="text-gray-600">Load your database and manage flight records globally</p>
         </div>
 
         <div class="bg-white rounded-lg shadow-xl p-6 mb-6">
@@ -24,6 +24,7 @@
                     Load Database
                 </button>
             </div>
+            <p class="text-sm text-gray-500 mt-2">Upload an SQLite database file (.db, .sqlite, .sqlite3)</p>
         </div>
 
         <div id="dbInfo" class="hidden bg-white rounded-lg shadow-xl p-6 mb-6">
@@ -33,54 +34,151 @@
 
         <div id="addFlightSection" class="hidden bg-white rounded-lg shadow-xl p-6 mb-6">
             <div class="flex gap-2 mb-4 border-b border-gray-200">
-                <button onclick="showManualEntry()" id="manualTab" class="px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600">Manual Entry</button>
-                <button onclick="showBulkImport()" id="bulkTab" class="px-4 py-2 font-semibold text-gray-600 hover:text-blue-600">Paste from FR24</button>
+                <button onclick="showManualEntry()" id="manualTab" 
+                        class="px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600">
+                    Manual Entry
+                </button>
+                <button onclick="showBulkImport()" id="bulkTab" 
+                        class="px-4 py-2 font-semibold text-gray-600 hover:text-blue-600">
+                    Paste from FR24
+                </button>
             </div>
 
             <div id="manualEntryTab">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">➕ Add Flight Manually</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="date" id="dof" class="w-full p-3 border rounded-lg">
-                    <input type="text" id="flightNumber" placeholder="Flight Number" class="w-full p-3 border rounded-lg">
-                    <input type="text" id="departure" placeholder="Dep (ICAO)" maxlength="4" class="w-full p-3 border rounded-lg">
-                    <input type="text" id="arrival" placeholder="Arr (ICAO)" maxlength="4" class="w-full p-3 border rounded-lg">
-                    <div class="grid grid-cols-4 gap-2 col-span-2">
-                        <input type="text" id="timeOut" placeholder="Out" class="p-2 border rounded">
-                        <input type="text" id="timeOff" placeholder="Off" class="p-2 border rounded">
-                        <input type="text" id="timeOn" placeholder="On" class="p-2 border rounded">
-                        <input type="text" id="timeIn" placeholder="In" class="p-2 border rounded">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date of Flight</label>
+                        <input type="date" id="dof" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
-                    <input type="text" id="crewCode" placeholder="Manual Crew Code (Optional)" class="p-3 border rounded-lg">
-                    <input type="text" id="fuelRem" placeholder="Fuel Remaining (Optional)" class="p-3 border rounded-lg">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Flight Number</label>
+                        <input type="text" id="flightNumber" placeholder="e.g., JJ3128, LA8001" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Departure Airport (ICAO)</label>
+                        <input type="text" id="departure" placeholder="e.g., SBGR, KJFK" maxlength="4"
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Arrival Airport (ICAO)</label>
+                        <input type="text" id="arrival" placeholder="e.g., SBCG, KLAX" maxlength="4"
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="col-span-2 bg-blue-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-700 mb-3">OOOI Times (HHMM format)</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Out (pushback)</label>
+                                <input type="text" id="timeOut" placeholder="2014" maxlength="4"
+                                       class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Off (takeoff)</label>
+                                <input type="text" id="timeOff" placeholder="2007" maxlength="4"
+                                       class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">On (landing)</label>
+                                <input type="text" id="timeOn" placeholder="2136" maxlength="4"
+                                       class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">In (gate arrival)</label>
+                                <input type="text" id="timeIn" placeholder="2150" maxlength="4"
+                                       class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Block Time (HHMM)</label>
+                        <input type="text" id="blockTime" placeholder="Auto-calculated" readonly
+                               class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Flight Time (HHMM)</label>
+                        <input type="text" id="flightTime" placeholder="Auto-calculated" readonly
+                               class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Crew Code (optional)</label>
+                        <input type="text" id="crewCode" placeholder="e.g., TAM0003" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fuel Remaining (optional)</label>
+                        <input type="text" id="fuelRem" placeholder="e.g., 3.7" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
                 </div>
                 <div class="mt-4 flex gap-4">
-                    <button onclick="calculateTimes()" class="bg-green-600 text-white py-3 px-6 rounded-lg">Calculate</button>
-                    <button onclick="addFlight()" class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg">Add Flight</button>
+                    <button onclick="calculateTimes()" 
+                            class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                        Calculate Block/Flight Times
+                    </button>
+                    <button onclick="addFlight()" 
+                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                        Add Flight to Logbook
+                    </button>
+                    <button onclick="clearForm()" 
+                            class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                        Clear
+                    </button>
                 </div>
             </div>
 
-            <div id="bulkImportTab" class="hidden">
-                <div class="bg-blue-50 p-4 rounded-lg mb-4">
-                    <label class="block text-sm font-bold text-blue-800 mb-1">Airline ICAO for this Batch:</label>
-                    <input type="text" id="batchIcao" placeholder="e.g., TAM, AAL, GLO" maxlength="4"
-                           class="w-full p-3 border border-blue-300 rounded mb-3 focus:ring-2 focus:ring-blue-500 uppercase">
-                    <p class="text-xs text-blue-600">This prefix will replace "CREW" in your generated Crew Codes.</p>
-                </div>
-                <textarea id="bulkData" rows="8" class="w-full p-4 border rounded-lg font-mono text-sm" placeholder="Paste FR24 data here..."></textarea>
-                <button onclick="parseBulkData()" class="mt-4 w-full bg-blue-600 text-white py-3 rounded-lg font-semibold">Parse and Import</button>
-                <div id="parseResults" class="mt-4 hidden"><div id="parseResultsContent"></div></div>
-            </div>
+<div id="bulkImportTab" class="hidden">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">📋 Paste FR24 Data</h2>
+    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+        <div class="mb-4">
+            <label class="block text-sm font-bold text-blue-800 mb-1">Airline ICAO for this Batch:</label>
+            <input type="text" id="batchIcao" placeholder="e.g., TAM, AAL, DAL" maxlength="4"
+                   class="w-full p-2 border border-blue-300 rounded focus:ring-2 focus:ring-blue-500 uppercase">
+            <p class="text-xs text-blue-600 mt-1">This prefix will replace "CREW" in the generated Crew Codes.</p>
         </div>
+        
+        <p class="text-sm text-gray-700 mb-2"><strong>Instructions:</strong></p>
+        <ol class="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+            <li>Paste your FR24 data into the box below.</li>
+            <li>Enter the airline prefix (ICAO) you want to use.</li>
+            <li>Click "Parse and Import Flights".</li>
+        </ol>
+    </div>
+    
+    <textarea id="bulkData" rows="8" class="w-full p-4 border border-gray-300 rounded-lg font-mono text-sm" placeholder="Paste FR24 data here..."></textarea>
+    
+    <div class="mt-4 flex gap-4">
+        <button onclick="parseBulkData()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold">Parse and Import</button>
+    </div>
+    <div id="parseResults" class="mt-4 hidden"><div id="parseResultsContent"></div></div>
+</div>
 
         <div id="logbookSection" class="hidden bg-white rounded-lg shadow-xl p-6">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">📖 Flight Logbook</h2>
-                <button onclick="exportDatabase()" class="bg-green-600 text-white py-2 px-4 rounded-lg">💾 Export</button>
+                <h2 class="text-xl font-semibold text-gray-800">📖 Flight Logbook</h2>
+                <button onclick="exportDatabase()" 
+                        class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                    💾 Export Database
+                </button>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-50"><tr id="logbookHeader"></tr></thead>
-                    <tbody id="logbookBody" class="divide-y divide-gray-200"></tbody>
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr id="logbookHeader">
+                            </tr>
+                    </thead>
+                    <tbody id="logbookBody" class="divide-y divide-gray-200">
+                        </tbody>
                 </table>
+            </div>
+            <div id="logbookStats" class="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h3 class="font-semibold text-gray-700 mb-2">Statistics</h3>
+                <div id="statsContent" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm"></div>
             </div>
         </div>
     </div>
@@ -88,117 +186,375 @@
     <script>
         let db = null;
         let tableName = null;
-        const routeCrewAssignments = {};
-        let SQL;
+        let globalAirports = {};
 
         // Initialize SQL.js
+        let SQL;
         initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` })
-            .then(sql => { SQL = sql; });
+            .then(sql => {
+                SQL = sql;
+                console.log("SQL.js initialized");
+            });
 
-        // Generate consistent Crew Codes based on Route and User Prefix
-        function getCrewForRoute(dep, arr, customPrefix) {
-            const key = [dep, arr].sort().join('-');
-            if (routeCrewAssignments[key]) return routeCrewAssignments[key];
-            
-            const prefix = (customPrefix && customPrefix.trim() !== '') ? customPrefix.toUpperCase() : 'CREW';
-            routeCrewAssignments[key] = prefix + Math.floor(1000 + Math.random() * 8999);
-            return routeCrewAssignments[key];
+        // Load Global Airport Database
+        async function loadGlobalAirports() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json');
+                globalAirports = await response.json();
+                console.log("Global airport database loaded successfully");
+            } catch (error) {
+                console.error("Could not load global airport data:", error);
+            }
         }
+        loadGlobalAirports();
 
         async function loadDatabase() {
-            const file = document.getElementById('dbFile').files[0];
-            if (!file) return;
-            const buffer = await file.arrayBuffer();
-            db = new SQL.Database(new Uint8Array(buffer));
-            const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
-            if (tables.length === 0) createDefaultTable(); else selectTable(tables[0].values[0][0]);
-            ["dbInfo", "addFlightSection", "logbookSection"].forEach(id => document.getElementById(id).classList.remove("hidden"));
+            const fileInput = document.getElementById('dbFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a database file');
+                return;
+            }
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const uint8Array = new Uint8Array(arrayBuffer);
+                
+                // Load database
+                db = new SQL.Database(uint8Array);
+                
+                // Get tables
+                const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'");
+                
+                if (tables.length === 0 || tables[0].values.length === 0) {
+                    createDefaultTable();
+                } else {
+                    displayTables(tables[0].values);
+                }
+                
+                document.getElementById('dbInfo').classList.remove('hidden');
+                document.getElementById('addFlightSection').classList.remove('hidden');
+                document.getElementById('logbookSection').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Error loading database:', error);
+                alert('Error loading database. Creating new database with default table.');
+                db = new SQL.Database();
+                createDefaultTable();
+                document.getElementById('dbInfo').classList.remove('hidden');
+                document.getElementById('addFlightSection').classList.remove('hidden');
+                document.getElementById('logbookSection').classList.remove('hidden');
+            }
         }
 
         function createDefaultTable() {
             tableName = 'flights';
-            db.run("CREATE TABLE IF NOT EXISTS flights (id INTEGER PRIMARY KEY, DOF TEXT, FLTNUM TEXT, DEP TEXT, DEST TEXT, OOOI TEXT, BLK TEXT, FLT TEXT, LANDING_RATE TEXT, LANDING_GLOAD TEXT, LANDING_PITCH TEXT, LANDING_FLAP TEXT, FUELREM TEXT, CREWCODE TEXT)");
+            db.run(`
+                CREATE TABLE IF NOT EXISTS flights (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    DOF TEXT,
+                    FLTNUM TEXT,
+                    DEP TEXT,
+                    DEST TEXT,
+                    OOOI TEXT,
+                    BLK TEXT,
+                    FLT TEXT,
+                    LANDING_RATE TEXT,
+                    LANDING_GLOAD TEXT,
+                    LANDING_PITCH TEXT,
+                    LANDING_FLAP TEXT,
+                    FUELREM TEXT,
+                    CREWCODE TEXT
+                )
+            `);
+            
+            document.getElementById('dbTables').innerHTML = `
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-sm text-green-800">✅ Created default table: <strong>flights</strong></p>
+                </div>
+            `;
+            
             displayLogbook();
         }
 
-        function selectTable(name) { tableName = name; displayLogbook(); }
+        function displayTables(tables) {
+            const container = document.getElementById('dbTables');
+            let html = '<div class="space-y-2">';
+            
+            tables.forEach(table => {
+                const name = table[0];
+                const columns = db.exec(`PRAGMA table_info(${name})`);
+                const columnNames = columns[0].values.map(col => col[1]).join(', ');
+                
+                html += `
+                    <div class="bg-blue-50 p-4 rounded-lg cursor-pointer hover:bg-blue-100 transition" onclick="selectTable('${name}')">
+                        <p class="font-semibold text-blue-800">📋 ${name}</p>
+                        <p class="text-xs text-blue-600 mt-1">Columns: ${columnNames}</p>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+            
+            if (tables.length > 0) {
+                selectTable(tables[0][0]);
+            }
+        }
+
+        function selectTable(name) {
+            tableName = name;
+            displayLogbook();
+        }
 
         function displayLogbook() {
-            const res = db.exec(`SELECT * FROM ${tableName} ORDER BY id DESC`);
-            if (res.length === 0) return;
-            document.getElementById('logbookHeader').innerHTML = res[0].columns.map(c => `<th class="px-4 py-2 text-xs font-bold uppercase text-gray-500">${c}</th>`).join('');
-            document.getElementById('logbookBody').innerHTML = res[0].values.map(r => `<tr>${r.map(v => `<td class="px-4 py-2 text-sm text-gray-700">${v||'-'}</td>`).join('')}</tr>`).join('');
-        }
-
-        function calculateTimeString(s, e) {
-            if (!s || !e) return "0000";
-            const toM = (v) => parseInt(v.substring(0,2))*60 + parseInt(v.substring(2,4));
-            let m = toM(e) - toM(s); if (m < 0) m += 1440;
-            return String(Math.floor(m/60)).padStart(2,'0') + String(m%60).padStart(2,'0');
-        }
-
-        function generateLandingData() {
-            return {
-                landingRate: (-100 - Math.random() * 200).toFixed(2),
-                landingGload: (1.0 + Math.random() * 0.25).toFixed(2),
-                landingPitch: (3 + Math.random() * 4).toFixed(2),
-                landingFlap: 'FULL',
-                fuelRem: (2 + Math.random() * 4).toFixed(1)
-            };
-        }
-
-        // Updated import using the Batch ICAO input
-        function importParsedFlights(flights) {
-            const userIcao = document.getElementById('batchIcao').value.trim();
-            flights.forEach(f => {
-                const crew = getCrewForRoute(f.dep, f.arr, userIcao);
-                const land = generateLandingData();
-                const oooi = `${f.timeOut}/${f.timeOff}/${f.timeOn}/${f.timeIn}`;
+            if (!db || !tableName) return;
+            
+            try {
+                const results = db.exec(`SELECT * FROM ${tableName}`);
                 
-                db.run(`INSERT INTO ${tableName} (DOF, FLTNUM, DEP, DEST, OOOI, BLK, FLT, LANDING_RATE, LANDING_GLOAD, LANDING_PITCH, LANDING_FLAP, FUELREM, CREWCODE) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`, 
-                    [f.date, f.flightNum, f.dep, f.arr, oooi, f.blk, f.flt, land.landingRate, land.landingGload, land.landingPitch, land.landingFlap, land.fuelRem, crew]);
-            });
-            displayLogbook();
-            alert(`Imported ${flights.length} flights!`);
+                if (results.length === 0) {
+                    document.getElementById('logbookBody').innerHTML = `
+                        <tr><td colspan="100" class="text-center py-8 text-gray-500">No flights in logbook yet</td></tr>
+                    `;
+                    document.getElementById('logbookHeader').innerHTML = '';
+                    return;
+                }
+                
+                const columns = results[0].columns;
+                const values = results[0].values;
+                
+                let headerHtml = '';
+                columns.forEach(col => {
+                    headerHtml += `<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${col}</th>`;
+                });
+                document.getElementById('logbookHeader').innerHTML = headerHtml;
+                
+                let bodyHtml = '';
+                values.forEach(row => {
+                    bodyHtml += '<tr class="hover:bg-gray-50">';
+                    row.forEach(cell => {
+                        bodyHtml += `<td class="px-4 py-3 text-sm text-gray-700">${cell !== null ? cell : '-'}</td>`;
+                    });
+                    bodyHtml += '</tr>';
+                });
+                document.getElementById('logbookBody').innerHTML = bodyHtml;
+                
+                calculateStats(values, columns);
+                
+            } catch (error) {
+                console.error('Error displaying logbook:', error);
+            }
         }
 
-        // Standard FR24 Parser (Simplified for demo, replace with your specific logic if needed)
+        function calculateStats(values, columns) {
+            const blkIndex = columns.indexOf('BLK');
+            const depIndex = columns.indexOf('DEP');
+            
+            let totalFlights = values.length;
+            let totalBlockMins = 0;
+            let uniqueAirports = new Set();
+            
+            function hhmmToMinutes(hhmm) {
+                if (!hhmm || hhmm.length !== 4) return 0;
+                const hours = parseInt(hhmm.substring(0, 2));
+                const mins = parseInt(hhmm.substring(2, 4));
+                return hours * 60 + mins;
+            }
+            
+            values.forEach(row => {
+                if (blkIndex !== -1 && row[blkIndex]) {
+                    totalBlockMins += hhmmToMinutes(row[blkIndex]);
+                }
+                if (depIndex !== -1 && row[depIndex]) {
+                    uniqueAirports.add(row[depIndex]);
+                }
+            });
+            
+            const totalBlockHours = (totalBlockMins / 60).toFixed(1);
+            
+            let statsHtml = `
+                <div><p class="text-gray-600">Total Flights</p><p class="text-2xl font-bold text-blue-600">${totalFlights}</p></div>
+                <div><p class="text-gray-600">Block Hours</p><p class="text-2xl font-bold text-green-600">${totalBlockHours}</p></div>
+                <div><p class="text-gray-600">Airports</p><p class="text-2xl font-bold text-orange-600">${uniqueAirports.size}</p></div>
+            `;
+            document.getElementById('statsContent').innerHTML = statsHtml;
+        }
+
+        function addFlight() {
+            if (!db || !tableName) {
+                alert('Please load a database first');
+                return;
+            }
+            
+            const dof = document.getElementById('dof').value;
+            const flightNumber = document.getElementById('flightNumber').value;
+            const departure = document.getElementById('departure').value.toUpperCase();
+            const arrival = document.getElementById('arrival').value.toUpperCase();
+            const timeOut = document.getElementById('timeOut').value;
+            const timeOff = document.getElementById('timeOff').value;
+            const timeOn = document.getElementById('timeOn').value;
+            const timeIn = document.getElementById('timeIn').value;
+            const blockTime = document.getElementById('blockTime').value;
+            const flightTime = document.getElementById('flightTime').value;
+            
+            if (!dof || !flightNumber || !departure || !arrival || !timeOut || !timeOff || !timeOn || !timeIn) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            const oooi = `${timeOut}/${timeOff}/${timeOn}/${timeIn}`;
+            const crewCode = document.getElementById('crewCode').value || getCrewForRoute(departure, arrival);
+            const landingData = generateLandingData();
+            const fuelRem = document.getElementById('fuelRem').value || landingData.fuelRem;
+            
+            try {
+                db.run(`
+                    INSERT INTO ${tableName} (DOF, FLTNUM, DEP, DEST, OOOI, BLK, FLT, LANDING_RATE, LANDING_GLOAD, LANDING_PITCH, LANDING_FLAP, FUELREM, CREWCODE)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `, [dof, flightNumber, departure, arrival, oooi, blockTime, flightTime, landingData.landingRate, landingData.landingGload, landingData.landingPitch, landingData.landingFlap, fuelRem, crewCode]);
+                
+                alert('✅ Flight added successfully!');
+                clearForm();
+                displayLogbook();
+            } catch (error) {
+                alert('Error adding flight: ' + error.message);
+            }
+        }
+
+        function parseFlightLine(line) {
+            line = line.trim();
+            if (!line || line.length < 20) return null;
+            
+            line = line.replace(/Landed\s+\d{1,2}:\d{2}/g, '');
+            
+            let flightNum = null, dep = null, arr = null, date = null, times = [];
+
+            const dateMatch = line.match(/^(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})/);
+            if (dateMatch) {
+                date = new Date(dateMatch[1] + ' UTC').toISOString().split('T')[0];
+                line = line.substring(dateMatch[0].length).trim();
+            }
+
+            const airportPattern = /\(([A-Z]{3,4})\)/g;
+            const airports = [...line.matchAll(airportPattern)].map(m => m[1]);
+            
+            if (airports.length >= 2) {
+                const convertIataToIcao = (code) => {
+                    if (code.length === 4) return code;
+                    const found = Object.values(globalAirports).find(a => a.iata === code);
+                    if (found && found.icao) return found.icao;
+                    
+                    const brMapping = {'GRU': 'SBGR', 'CGH': 'SBSP', 'BSB': 'SBBR', 'REC': 'SBRF', 'SSA': 'SBSV', 'FOR': 'SBFZ', 'MAO': 'SBEG', 'BEL': 'SBBE', 'CWB': 'SBCT', 'POA': 'SBPA', 'GIG': 'SBGL', 'VCP': 'SBKP', 'CNF': 'SBCF', 'FLN': 'SBFL', 'NAT': 'SBSG', 'MCZ': 'SBMO', 'CGR': 'SBCG', 'JPA': 'SBJP', 'BPS': 'SBPS', 'LIM': 'SPJC', 'AJU': 'SBAR', 'CGB': 'SBCY', 'IGU': 'SBFI', 'THE': 'SBTE'};
+                    return brMapping[code] || ('SB' + code); 
+                };
+                dep = convertIataToIcao(airports[0]);
+                arr = convertIataToIcao(airports[1]);
+            }
+
+            const flightMatch = line.match(/([A-Z]{2,3}\d{3,4})/);
+            if (flightMatch) flightNum = flightMatch[1];
+
+            const timePattern = /(\d{1,2}):(\d{2})/g;
+            const timeMatches = [...line.matchAll(timePattern)];
+            
+            if (timeMatches.length >= 4) {
+                const t2 = timeMatches[2], t3 = timeMatches[3];
+                const outTime = t2[1].padStart(2, '0') + t2[2].padStart(2, '0');
+                const inTime = t3[1].padStart(2, '0') + t3[2].padStart(2, '0');
+                
+                const addMinutes = (hhmm, mins) => {
+                    let m = parseInt(hhmm.substring(0, 2)) * 60 + parseInt(hhmm.substring(2, 4)) + mins;
+                    m = (m + 1440) % 1440;
+                    return String(Math.floor(m / 60)).padStart(2, '0') + String(m % 60).padStart(2, '0');
+                };
+                times = [outTime, addMinutes(outTime, 7), addMinutes(inTime, -7), inTime];
+            }
+
+            if (!flightNum || !dep || !arr || times.length !== 4) return null;
+            return { flightNum, dep, arr, date: date || new Date().toISOString().split('T')[0], timeOut: times[0], timeOff: times[1], timeOn: times[2], timeIn: times[3] };
+        }
+
         function parseBulkData() {
-            const data = document.getElementById('bulkData').value.trim();
-            if(!data) return;
-            const lines = data.split('\n');
-            const flights = lines.map(line => {
-                const p = line.split(/\s+/);
-                if (p.length < 3) return null;
-                return { flightNum: p[0], dep: p[1], arr: p[2], date: new Date().toISOString().split('T')[0], timeOut: '1200', timeOff: '1210', timeOn: '1350', timeIn: '1400', blk: '0200', flt: '0140' };
-            }).filter(f => f);
-            importParsedFlights(flights);
+            const bulkData = document.getElementById('bulkData').value.trim();
+            if (!bulkData) return;
+            const lines = bulkData.split('\n').filter(line => line.trim());
+            const flights = lines.map(line => parseFlightLine(line)).filter(f => f !== null);
+            displayParsedFlights(flights);
+        }
+
+        function displayParsedFlights(flights) {
+            const resultsDiv = document.getElementById('parseResults');
+            const contentDiv = document.getElementById('parseResultsContent');
+            let html = flights.map(f => `
+                <div class="bg-gray-50 p-3 rounded-lg text-sm mb-2">
+                    <div class="font-semibold">${f.flightNum}: ${f.dep} → ${f.arr}</div>
+                    <div class="text-gray-600">Date: ${f.date} | OOOI: ${f.timeOut}/${f.timeOff}/${f.timeOn}/${f.timeIn}</div>
+                </div>
+            `).join('');
+            
+            contentDiv.innerHTML = html + `<button onclick='importParsedFlights(${JSON.stringify(flights)})' class="mt-4 w-full bg-green-600 text-white py-3 rounded-lg">Import ${flights.length} Flights</button>`;
+            resultsDiv.classList.remove('hidden');
+        }
+
+        function importParsedFlights(flights) {
+    if (!db || !tableName) return;
+
+    // Get the desired ICAO from the new input box
+    const userIcao = document.getElementById('batchIcao').value;
+
+    flights.forEach(f => {
+        const oooi = `${f.timeOut}/${f.timeOff}/${f.timeOn}/${f.timeIn}`;
+        const blk = calculateTimeString(f.timeOut, f.timeIn);
+        const flt = calculateTimeString(f.timeOff, f.timeOn);
+        
+        // Pass the user-defined ICAO to the crew generator
+        const crew = getCrewForRoute(f.dep, f.arr, userIcao);
+        const land = generateLandingData();
+
+        db.run(`INSERT INTO ${tableName} (DOF, FLTNUM, DEP, DEST, OOOI, BLK, FLT, LANDING_RATE, LANDING_GLOAD, LANDING_PITCH, LANDING_FLAP, FUELREM, CREWCODE) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+                [f.date, f.flightNum, f.dep, f.arr, oooi, blk, flt, land.landingRate, land.landingGload, land.landingPitch, land.landingFlap, land.fuelRem, crew]);
+    });
+
+    displayLogbook();
+    document.getElementById('parseResults').classList.add('hidden');
+    document.getElementById('bulkData').value = '';
+    alert(`Successfully imported ${flights.length} flights!`);
+}
+        function calculateTimeString(start, end) {
+            const toMin = (s) => parseInt(s.substring(0, 2)) * 60 + parseInt(s.substring(2, 4));
+            let m = toMin(end) - toMin(start);
+            if (m < 0) m += 1440;
+            return String(Math.floor(m / 60)).padStart(2, '0') + String(m % 60).padStart(2, '0');
+        }
+
+        const routeCrewAssignments = {};
+       function getCrewForRoute(dep, arr, customPrefix) {
+    const key = [dep, arr].sort().join('-');
+    if (routeCrewAssignments[key]) return routeCrewAssignments[key];
+
+    // Use the user-provided ICAO, or default to 'CREW'
+    const prefix = (customPrefix && customPrefix.trim() !== '') ? customPrefix.toUpperCase() : 'CREW';
+    
+    routeCrewAssignments[key] = prefix + Math.floor(1000 + Math.random() * 9000);
+    return routeCrewAssignments[key];
+}
+        function generateLandingData() {
+            return { landingRate: (-100 - Math.random() * 200).toFixed(2), landingGload: (1.0 + Math.random() * 0.3).toFixed(2), landingPitch: (3 + Math.random() * 4).toFixed(2), landingFlap: 'FULL', fuelRem: (2 + Math.random() * 4).toFixed(1) };
         }
 
         function calculateTimes() {
             const tOut = document.getElementById('timeOut').value, tIn = document.getElementById('timeIn').value;
             const tOff = document.getElementById('timeOff').value, tOn = document.getElementById('timeOn').value;
-            if (tOut && tIn) document.getElementById('blockTime')?.value = calculateTimeString(tOut, tIn);
-            if (tOff && tOn) document.getElementById('flightTime')?.value = calculateTimeString(tOff, tOn);
-        }
-
-        function addFlight() {
-            const fnum = document.getElementById('flightNumber').value;
-            const dep = document.getElementById('departure').value;
-            const arr = document.getElementById('arrival').value;
-            const crew = document.getElementById('crewCode').value || getCrewForRoute(dep, arr);
-            const land = generateLandingData();
-            const oooi = `${document.getElementById('timeOut').value}/${document.getElementById('timeOff').value}/${document.getElementById('timeOn').value}/${document.getElementById('timeIn').value}`;
-            
-            db.run(`INSERT INTO ${tableName} (DOF, FLTNUM, DEP, DEST, OOOI, BLK, FLT, LANDING_RATE, LANDING_GLOAD, LANDING_PITCH, LANDING_FLAP, FUELREM, CREWCODE) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`, 
-                [document.getElementById('dof').value, fnum, dep, arr, oooi, calculateTimeString(document.getElementById('timeOut').value, document.getElementById('timeIn').value), calculateTimeString(document.getElementById('timeOff').value, document.getElementById('timeOn').value), land.landingRate, land.landingGload, land.landingPitch, land.landingFlap, document.getElementById('fuelRem').value || land.fuelRem, crew]);
-            displayLogbook();
-            clearForm();
+            if (tOut && tIn) document.getElementById('blockTime').value = calculateTimeString(tOut, tIn);
+            if (tOff && tOn) document.getElementById('flightTime').value = calculateTimeString(tOff, tOn);
         }
 
         function showManualEntry() { document.getElementById('manualEntryTab').classList.remove('hidden'); document.getElementById('bulkImportTab').classList.add('hidden'); }
         function showBulkImport() { document.getElementById('manualEntryTab').classList.add('hidden'); document.getElementById('bulkImportTab').classList.remove('hidden'); }
-        function clearForm() { ['dof', 'flightNumber', 'departure', 'arrival', 'timeOut', 'timeOff', 'timeOn', 'timeIn', 'crewCode', 'fuelRem'].forEach(id => document.getElementById(id).value = ''); }
+        function clearForm() { ['dof', 'flightNumber', 'departure', 'arrival', 'timeOut', 'timeOff', 'timeOn', 'timeIn', 'blockTime', 'flightTime', 'crewCode', 'fuelRem'].forEach(id => document.getElementById(id).value = ''); }
         function exportDatabase() { if (!db) return; const data = db.export(); const blob = new Blob([data], { type: 'application/x-sqlite3' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `logbook_${new Date().toISOString().split('T')[0]}.db`; a.click(); }
     </script>
 </body>
