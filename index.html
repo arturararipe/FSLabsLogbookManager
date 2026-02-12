@@ -210,7 +210,7 @@
             let prefix = 'CREW';
 
             try {
-                const response = await fetch(`https://api.aviationstack.com/v1/airlines?access_key=${976447ce8e08715d03e6fe7b9327facd}&iata_code=${iataPrefix}`);
+                const response = await fetch(`https://api.aviationstack.com/v1/airlines?access_key=${AVIATION_API_KEY}&iata_code=${iataPrefix}`);
                 const data = await response.json();
 
                 if (data.data && data.data.length > 0) {
